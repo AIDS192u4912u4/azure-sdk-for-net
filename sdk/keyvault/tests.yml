@@ -1,33 +1,36 @@
 trigger: none
 
 extends:
-  template: ../../eng/pipelines/templates/stages/archetype-sdk-tests.yml
+  template: ../../eng/pipelines/templates/jobs/archetype-sdk-tests-multiple.yml
   parameters:
-    ServiceDirectory: keyvault
-    SDKType: client
-    MaxParallel: 5
-    TimeoutInMinutes: 240
-    CloudConfig:
-      Public:
-        ${{ if not(contains(variables['Build.DefinitionName'], 'tests-weekly')) }}:
-          MatrixFilters:
-            - ArmTemplateParameters=^(?!.*enableHsm.*true)
-      # Canary regions are currently not supported in TME so disabling for now
-      # Canary:
-      #   Location: 'centraluseuap'
-      #   # Managed HSM test resources are expensive and provisioning has not been reliable.
-      #   # Given test coverage of non-canary regions we probably don't need to test in canary.
-      #   MatrixFilters:
-      #    - ArmTemplateParameters=^(?!.*enableHsm.*true)
-      #   # Some resource providers required for attestation are not supported in canary.
-      #   MatrixReplace:
-      #    - 'ArmTemplateParameters=(.*)enableAttestation.*?\$true(.*)/$1enableAttestation \= $false$2'
-    MatrixConfigs:
-      - Name: keyvault_test_matrix
-        Path: sdk/keyvault/platform-matrix.json
-        Selection: sparse
-        GenerateVMJobs: true
-    EnvVars:
-      # Runs samples with live tests.
-      # THIS VARIABLE IS A ONE-OFF WORKAROUND FOR KEYVAULT TESTS SPECIFICALLY, DON'T COPY IT
-      AZURE_KEYVAULT_TEST_MODE: Live
+    jobs:
+      # Azure Cloud
+      - ServiceDirectory: keyvault
+        TimeoutInMinutes: 120
+        ScenarioName: AzureCloud
+        SubscriptionConfiguration: $(sub-config-azure-cloud-test-resources)
+        ArmTemplateParameters: "@{ keyVaultDomainSuffix = '.vault.azure.net' }"
+        EnvVars:
+          # Runs samples with live tests.
+          AZURE_KEYVAULT_TEST_MODE: Live
+          AZURE_AUTHORITY_HOST: https://login.microsoftonline.com
+
+      # AzureUSGovernment
+      - ServiceDirectory: keyvault
+        ScenarioName: AzureUSGovernment
+        SubscriptionConfiguration: $(sub-config-gov-test-resources)
+        ArmTemplateParameters: "@{ keyVaultDomainSuffix = '.vault.usgovcloudapi.net' }"
+        EnvVars:
+          # Runs samples with live tests.
+          AZURE_KEYVAULT_TEST_MODE: Live
+          AZURE_AUTHORITY_HOST: https://login.microsoftonline.us
+
+      # AzureChinaCloud
+      - ServiceDirectory: keyvault
+        ScenarioName: AzureChinaCloud
+        SubscriptionConfiguration: $(sub-config-cn-test-resources)
+        ArmTemplateParameters: "@{ keyVaultDomainSuffix = '.vault.azure.cn'; keyVaultSku = 'standard' }"
+        EnvVars:
+          # Runs samples with live tests.
+          AZURE_KEYVAULT_TEST_MODE: Live
+          AZURE_AUTHORITY_HOST: https://login.chinacloudapi.cn

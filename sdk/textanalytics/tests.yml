@@ -1,29 +1,9 @@
-parameters:
-- name: Location
-  displayName: Location
-  type: string
-  default: eastus
-
 trigger: none
 
 extends:
-  template: /eng/pipelines/templates/stages/archetype-sdk-tests.yml
+  template: /eng/pipelines/templates/jobs/archetype-sdk-tests.yml
   parameters:
     ServiceDirectory: textanalytics
-    CloudConfig:
-      Public:
-        Location: '${{ parameters.Location }}'
-    # temporary env vars for custom text features
     EnvVars:
-        AZURE_SUBSCRIPTION_ID: $(azure-subscription-id)
-        AZURE_TENANT_ID: $(aad-azure-sdk-test-tenant-id)
-        AZURE_CLIENT_SECRET: $(aad-azure-sdk-test-client-secret)
-        AZURE_CLIENT_ID: $(aad-azure-sdk-test-client-id)
-        TEXTANALYTICS_STATIC_ENDPOINT: $(js-textanalytics-test-service-endpoint)
-        TEXTANALYTICS_STATIC_API_KEY: $(js-textanalytics-api-key-new)
-        TEXTANALYTICS_SINGLE_CATEGORY_CLASSIFY_PROJECT_NAME: $(js-single-category-classify-project-name)
-        TEXTANALYTICS_SINGLE_CATEGORY_CLASSIFY_DEPLOYMENT_NAME: $(js-single-category-classify-deployment-name)
-        TEXTANALYTICS_MULTI_CATEGORY_CLASSIFY_PROJECT_NAME: $(js-multi-category-classify-project-name)
-        TEXTANALYTICS_MULTI_CATEGORY_CLASSIFY_DEPLOYMENT_NAME: $(js-multi-category-classify-deployment-name)
-        TEXTANALYTICS_CUSTOM_ENTITIES_PROJECT_NAME: $(js-recognize-custom-entities-project-name)
-        TEXTANALYTICS_CUSTOM_ENTITIES_DEPLOYMENT_NAME: $(js-recognize-custom-entities-deployment-name)
+      TEXT_ANALYTICS_API_KEY: $(net-textanalytics-test-api-key)
+      TEXT_ANALYTICS_ENDPOINT: $(net-textanalytics-test-ppe-endpoint-string)
